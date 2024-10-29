@@ -1,0 +1,37 @@
+name: Descomprimir un archivo ZIP
+
+on:
+  push:
+    paths:
+      - '**.zip'  # Se activa con cualquier archivo ZIP subido
+  workflow_dispatch:  # Permite activar manualmente el workflow
+
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v2
+
+      - name: Descomprimir el archivo
+        run: |
+          # Eliminar cualquier directorio existente que pueda causar conflictos
+          rm -rf css en fonts js
+          
+          # Descomprimir el último archivo ZIP
+          filename=$(basename -s .zip *.zip)
+          unzip *.zip
+          rm *.zip  # Eliminar el archivo ZIP después de la extracción
+          
+          # Mover contenidos al directorio raíz
+          mv $filename/* .  # Mover contenidos al directorio raíz
+          rm -rf $filename  # Eliminar el directorio temporal
+
+      - name: Confirmar y enviar cambios
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add .
+          git commit -m "Descomprimido el contenido del archivo ZIP"
+          git push origin main
